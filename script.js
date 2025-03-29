@@ -1,99 +1,106 @@
-// Open or create IndexedDB
-let db;
-const request = indexedDB.open("FinanceDB", 1);
+document.addEventListener("DOMContentLoaded", loadData);
 
-request.onupgradeneeded = function (event) {
-    db = event.target.result;
-    db.createObjectStore("groups", { keyPath: "name" });
-    db.createObjectStore("persons", { keyPath: "name" });
-    db.createObjectStore("transactions", { autoIncrement: true });
-};
-
-request.onsuccess = function (event) {
-    db = event.target.result;
-};
-
-// Save data to IndexedDB
-function saveData(storeName, data) {
-    const transaction = db.transaction([storeName], "readwrite");
-    const store = transaction.objectStore(storeName);
-    store.put(data);
+function loadData() {
+    loadGroups();
+    loadPersons();
 }
 
-// Add a group
+// Function to load Groups
+function loadGroups() {
+    let transaction = db.transaction(["groups"], "readonly");
+    let store = transaction.objectStore("groups");
+    let request = store.getAll();
+
+    request.onsuccess = function () {
+        let groups = request.result;
+        let groupList = document.getElementById("groupList");
+        groupList.innerHTML = "";
+
+        groups.forEach(group => {
+            let div = document.createElement("div");
+            div.classList.add("list-item");
+            div.innerHTML = `
+                <strong>${group.name}</strong> (Pending: ${group.pending})
+                <div class="dropdown">Show Members</div>
+                <div class="members" style="display: none;">
+                    ${group.members.map(member => `<p>${member}</p>`).join("")}
+                </div>
+            `;
+            div.querySelector(".dropdown").addEventListener("click", function () {
+                let membersDiv = this.nextElementSibling;
+                membersDiv.style.display = membersDiv.style.display === "none" ? "block" : "none";
+            });
+            groupList.appendChild(div);
+        });
+    };
+}
+
+// Function to load Persons
+function loadPersons() {
+    let transaction = db.transaction(["persons"], "readonly");
+    let store = transaction.objectStore("persons");
+    let request = store.getAll();
+
+    request.onsuccess = function () {
+        let persons = request.result;
+        let personList = document.getElementById("personList");
+        personList.innerHTML = "";
+
+        persons.forEach(person => {
+            let div = document.createElement("div");
+            div.classList.add("list-item");
+            div.innerHTML = `<strong>${person.name}</strong> (Pending: ${person.pending})`;
+            personList.appendChild(div);
+        });
+    };
+}
+
+// Function to add a group
 function addGroup() {
-    let groupName = document.getElementById("groupName").value;
-    let members = document.getElementById("members").value.split(",");
+    let name = document.getElementById("groupName").value;
+    let members = document.getElementById("groupMembers").value.split(",");
     let ticketAmount = parseFloat(document.getElementById("ticketAmount").value);
 
-    if (groupName && members.length > 0 && ticketAmount) {
-        let group = { name: groupName, members: members, total: ticketAmount, pending: ticketAmount };
-        saveData("groups", group);
-        alert("Group Added!");
-        location.reload();
-    } else {
-        alert("Please fill all fields correctly.");
+    if (!name || members.length === 0 || isNaN(ticketAmount)) {
+        alert("Please fill out all fields!");
+        return;
     }
+
+    let transaction = db.transaction(["groups"], "readwrite");
+    let store = transaction.objectStore("groups");
+
+    let group = {
+        name: name.trim(),
+        members: members.map(m => m.trim()),
+        ticketAmount: ticketAmount,
+        pending: ticketAmount,
+    };
+
+    store.add(group);
+    alert("Group added successfully!");
+    loadGroups();
 }
 
-// Add a specific person
+// Function to add a person
 function addPerson() {
-    let personName = document.getElementById("personName").value;
+    let name = document.getElementById("personName").value;
     let ticketAmount = parseFloat(document.getElementById("ticketAmountPerson").value);
 
-    if (personName && ticketAmount) {
-        let person = { name: personName, total: ticketAmount, pending: ticketAmount };
-        saveData("persons", person);
-        alert("Person Added!");
-        location.reload();
-    } else {
-        alert("Please fill all fields correctly.");
+    if (!name || isNaN(ticketAmount)) {
+        alert("Please fill out all fields!");
+        return;
     }
-}
 
-// Add payment to group/person
-function addPayment(name, amount, type) {
-    const transaction = db.transaction([type], "readwrite");
-    const store = transaction.objectStore(type);
-    const request = store.get(name);
+    let transaction = db.transaction(["persons"], "readwrite");
+    let store = transaction.objectStore("persons");
 
-    request.onsuccess = function () {
-        let data = request.result;
-        if (data) {
-            data.pending -= amount;
-            saveData(type, data);
-            saveTransaction(name, amount, type);
-            checkIfFullyPaid(name, type);
-        }
+    let person = {
+        name: name.trim(),
+        ticketAmount: ticketAmount,
+        pending: ticketAmount,
     };
-}
 
-// Save transaction history
-function saveTransaction(name, amount, type) {
-    const transaction = db.transaction(["transactions"], "readwrite");
-    const store = transaction.objectStore("transactions");
-    let now = new Date();
-    let record = { name, amount, type, date: now.toLocaleString() };
-    store.add(record);
-}
-
-// Check if fully paid
-function checkIfFullyPaid(name, type) {
-    const transaction = db.transaction([type], "readwrite");
-    const store = transaction.objectStore(type);
-    const request = store.get(name);
-
-    request.onsuccess = function () {
-        let data = request.result;
-        if (data.pending <= 0) {
-            moveToSuccessful(name, type);
-        }
-    };
-}
-
-// Move fully paid items to successful
-function moveToSuccessful(name, type) {
-    const transaction = db.transaction(["successful"], "readwrite");
-    const store = transaction.objectStore("successful");
-    store.put({ name, type });
+    store.add(person);
+    alert("Person added successfully!");
+    loadPersons();
 }
