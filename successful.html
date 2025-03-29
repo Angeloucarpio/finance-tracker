@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Successful Payments</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div id="navbar"></div>
+
+    <h2>Successful Transactions</h2>
+    <div id="successList"></div>
+
+    <script src="script.js"></script>
+    <script>
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navbar').innerHTML = data);
+
+        function loadSuccessful() {
+            const transaction = db.transaction(["successful"], "readonly");
+            const store = transaction.objectStore("successful");
+            const request = store.getAll();
+
+            request.onsuccess = function () {
+                let success = request.result;
+                let output = "";
+                success.forEach(item => {
+                    output += `<div class="group">
+                        <h3>${item.name}</h3>
+                        <p>Type: ${item.type}</p>
+                        <p>Status: Paid</p>
+                    </div>`;
+                });
+                document.getElementById("successList").innerHTML = output;
+            };
+        }
+        loadSuccessful();
+    </script>
+</body>
+</html>

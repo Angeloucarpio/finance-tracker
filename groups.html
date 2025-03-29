@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groups</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div id="navbar"></div>
+
+    <h2>Groups</h2>
+    <div id="groupList"></div>
+
+    <script src="script.js"></script>
+    <script>
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navbar').innerHTML = data);
+
+        function loadGroups() {
+            const transaction = db.transaction(["groups"], "readonly");
+            const store = transaction.objectStore("groups");
+            const request = store.getAll();
+
+            request.onsuccess = function () {
+                let groups = request.result;
+                let output = "";
+                groups.forEach(group => {
+                    output += `<div>
+                        <h3>${group.name}</h3>
+                        <p>Members: ${group.members.join(", ")}</p>
+                        <p>Pending: ${group.pending}</p>
+                        <input type="number" id="payment-${group.name}" placeholder="Enter Payment">
+                        <button onclick="addPayment('${group.name}', parseFloat(document.getElementById('payment-${group.name}').value), 'groups')">Add Payment</button>
+                    </div>`;
+                });
+                document.getElementById("groupList").innerHTML = output;
+            };
+        }
+        loadGroups();
+    </script>
+</body>
+</html>

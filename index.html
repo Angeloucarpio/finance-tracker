@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Financial Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <div id="navbar"></div>
+
+    <h2>Add Group</h2>
+    <input type="text" id="groupName" placeholder="Enter Group Name">
+    <input type="text" id="members" placeholder="Enter Members (comma separated)">
+    <input type="number" id="ticketAmount" placeholder="Ticket Amount">
+    <button onclick="addGroup()">Add Group</button>
+
+    <h2>Add Person</h2>
+    <input type="text" id="personName" placeholder="Enter Name">
+    <input type="number" id="ticketAmountPerson" placeholder="Ticket Amount">
+    <button onclick="addPerson()">Add Person</button>
+
+    <script src="script.js"></script>
+    <script>
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navbar').innerHTML = data);
+    </script>
+</body>
+</html>

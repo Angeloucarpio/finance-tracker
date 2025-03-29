@@ -1,0 +1,161 @@
+/* General Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+h2 {
+    margin: 20px;
+    color: #333;
+}
+
+/* Navigation Bar */
+nav {
+    background: #007bff;
+    padding: 15px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+}
+
+nav ul li {
+    margin: 0 15px;
+    position: relative;
+}
+
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    transition: 0.3s;
+}
+
+nav ul li a:hover {
+    color: #ffdd57;
+    text-decoration: underline;
+}
+
+/* Cards */
+.card {
+    background: white;
+    margin: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: scale(1.02);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Buttons */
+button {
+    background: #28a745;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #218838;
+}
+
+/* Inputs */
+input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 90%;
+    margin: 10px 0;
+}
+
+/* Icons */
+i {
+    margin-right: 8px;
+}
+
+/* Group & Person List */
+.list-container {
+    margin: 20px;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.list-item {
+    background: white;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 5px;
+    box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1);
+    transition: 0.3s;
+}
+
+.list-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 5px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Dropdown */
+.dropdown {
+    cursor: pointer;
+    padding: 10px;
+    background: #007bff;
+    color: white;
+    border-radius: 5px;
+    margin-top: 5px;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.dropdown:hover {
+    background: #0056b3;
+}
+
+/* Table */
+table {
+    width: 90%;
+    margin: 20px auto;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+th {
+    background: #007bff;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background: #f2f2f2;
+}
+
+/* Pending & Success Sections */
+.pending {
+    color: red;
+    font-weight: bold;
+}
+
+.success {
+    color: green;
+    font-weight: bold;
+}

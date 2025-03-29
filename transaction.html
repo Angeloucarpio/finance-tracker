@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction List</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div id="navbar"></div>
+
+    <h2>Transaction History</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Amount</th>
+                <th>Type</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody id="transactionList"></tbody>
+    </table>
+
+    <script src="script.js"></script>
+    <script>
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navbar').innerHTML = data);
+
+        function loadTransactions() {
+            const transaction = db.transaction(["transactions"], "readonly");
+            const store = transaction.objectStore("transactions");
+            const request = store.getAll();
+
+            request.onsuccess = function () {
+                let transactions = request.result;
+                let output = "";
+                transactions.forEach(item => {
+                    output += `<tr>
+                        <td>${item.name}</td>
+                        <td>${item.amount}</td>
+                        <td>${item.type}</td>
+                        <td>${item.date}</td>
+                    </tr>`;
+                });
+                document.getElementById("transactionList").innerHTML = output;
+            };
+        }
+        loadTransactions();
+    </script>
+</body>
+</html>

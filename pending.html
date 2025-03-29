@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Payments</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div id="navbar"></div>
+
+    <h2>Pending Transactions</h2>
+    <div id="pendingList"></div>
+
+    <script src="script.js"></script>
+    <script>
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => document.getElementById('navbar').innerHTML = data);
+
+        function loadPending() {
+            const transaction = db.transaction(["groups"], "readonly");
+            const store = transaction.objectStore("groups");
+            const request = store.getAll();
+
+            request.onsuccess = function () {
+                let pending = request.result.filter(item => item.pending > 0);
+                let output = "";
+                pending.forEach(item => {
+                    output += `<div class="group">
+                        <h3>${item.name}</h3>
+                        <p>Pending: ${item.pending}</p>
+                    </div>`;
+                });
+                document.getElementById("pendingList").innerHTML = output;
+            };
+        }
+        loadPending();
+    </script>
+</body>
+</html>
