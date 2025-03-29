@@ -14,12 +14,19 @@
     <h2>Add Group</h2>
     <input type="text" id="groupName" placeholder="Enter Group Name">
     <input type="text" id="members" placeholder="Enter Members (comma separated)">
+    <input type="number" id="ticketAmount" placeholder="Enter Ticket Amount">
     <button onclick="addGroup()">Add Group</button>
+
+    <h3>Groups List</h3>
+    <div id="groupList"></div>
 
     <h2>Add Person</h2>
     <input type="text" id="personName" placeholder="Enter Name">
     <input type="number" id="ticketAmountPerson" placeholder="Ticket Amount">
     <button onclick="addPerson()">Add Person</button>
+
+    <h3>Persons List</h3>
+    <div id="personList"></div>
 
     <script src="scripts.js"></script>
     <script>
@@ -27,5 +34,6 @@
             .then(response => response.text())
             .then(data => document.getElementById('navbar').innerHTML = data);
     </script>
+
 </body>
 </html>

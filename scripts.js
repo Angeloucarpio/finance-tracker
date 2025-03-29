@@ -3,9 +3,9 @@ let db;
 const request = indexedDB.open("financeTrackerDB", 1);
 
 request.onupgradeneeded = function (event) {
-    let db = event.target.result;
+    db = event.target.result; // Use global db variable
 
-    // Create Object Stores if not exist
+    // Create Object Stores if they don't exist
     if (!db.objectStoreNames.contains("groups")) {
         db.createObjectStore("groups", { keyPath: "id", autoIncrement: true });
     }
@@ -18,21 +18,19 @@ request.onsuccess = function (event) {
     db = event.target.result;
     console.log("Database connected successfully");
 
-    // Load data only when the database is ready
-    document.addEventListener("DOMContentLoaded", function () {
-        loadGroups();
-        loadPersons();
-    });
+    // Load data when the database is ready
+    loadGroups();
+    loadPersons();
 };
 
 request.onerror = function () {
-    console.log("Error connecting to database");
+    console.error("Error connecting to database");
 };
 
 // Function to add a group
 function addGroup() {
     let name = document.getElementById("groupName").value.trim();
-    let members = document.getElementById("groupMembers").value.split(",");
+    let members = document.getElementById("groupMembers").value.split(",").map(m => m.trim());
     let ticketAmount = parseFloat(document.getElementById("ticketAmount").value);
 
     if (!name || members.length === 0 || isNaN(ticketAmount) || ticketAmount <= 0) {
@@ -43,17 +41,11 @@ function addGroup() {
     let transaction = db.transaction(["groups"], "readwrite");
     let store = transaction.objectStore("groups");
 
-    let group = {
-        name: name,
-        members: members.map(m => m.trim()),
-        ticketAmount: ticketAmount,
-        pending: ticketAmount,
-    };
+    let group = { name, members, ticketAmount, pending: ticketAmount };
 
-    let request = store.add(group);
-    request.onsuccess = function () {
+    store.add(group).onsuccess = function () {
         alert("Group added successfully!");
-        loadGroups(); // Refresh group list
+        loadGroups();
         document.getElementById("groupName").value = "";
         document.getElementById("groupMembers").value = "";
         document.getElementById("ticketAmount").value = "";
@@ -62,20 +54,16 @@ function addGroup() {
 
 // Function to load groups
 function loadGroups() {
-    if (!db) {
-        console.error("Database not ready yet.");
-        return;
-    }
+    if (!db) return;
 
     let transaction = db.transaction(["groups"], "readonly");
     let store = transaction.objectStore("groups");
-    let request = store.getAll();
 
-    request.onsuccess = function () {
-        let groups = request.result;
+    store.getAll().onsuccess = function (event) {
+        let groups = event.target.result;
         let groupList = document.getElementById("groupList");
 
-        if (!groupList) return; // Avoid errors on pages without groupList
+        if (!groupList) return;
 
         groupList.innerHTML = "";
 
@@ -84,7 +72,7 @@ function loadGroups() {
             div.classList.add("list-item");
             div.innerHTML = `
                 <strong>${group.name}</strong> (Pending: ${group.pending}) <br>
-                <button onclick="toggleMembers('${group.id}')">Show Members</button>
+                <button onclick="toggleMembers(${group.id})">Show Members</button>
                 <button onclick="addPaymentToGroup(${group.id})">Add Payment</button>
                 <button onclick="addTicketToGroup(${group.id})">Add Ticket</button>
                 <div id="members-${group.id}" style="display: none;">
@@ -105,7 +93,8 @@ function toggleMembers(groupId) {
 
 // Function to add a payment to a group
 function addPaymentToGroup(id) {
-    let amount = parseFloat(prompt(`Enter payment amount:`));
+    id = Number(id);
+    let amount = parseFloat(prompt("Enter payment amount:"));
 
     if (isNaN(amount) || amount <= 0) {
         alert("Invalid amount!");
@@ -114,26 +103,23 @@ function addPaymentToGroup(id) {
 
     let transaction = db.transaction(["groups"], "readwrite");
     let store = transaction.objectStore("groups");
-    let request = store.get(id);
 
-    request.onsuccess = function () {
-        let group = request.result;
+    store.get(id).onsuccess = function (event) {
+        let group = event.target.result;
         if (!group) return;
 
-        group.pending -= amount;
-        if (group.pending <= 0) {
-            group.pending = 0;
-        }
-
-        store.put(group);
-        alert("Payment added!");
-        loadGroups();
+        group.pending = Math.max(0, group.pending - amount);
+        store.put(group).onsuccess = function () {
+            alert("Payment added!");
+            loadGroups();
+        };
     };
 }
 
 // Function to add a ticket to a group
 function addTicketToGroup(id) {
-    let amount = parseFloat(prompt(`Enter ticket amount:`));
+    id = Number(id);
+    let amount = parseFloat(prompt("Enter ticket amount:"));
 
     if (isNaN(amount) || amount <= 0) {
         alert("Invalid amount!");
@@ -142,18 +128,18 @@ function addTicketToGroup(id) {
 
     let transaction = db.transaction(["groups"], "readwrite");
     let store = transaction.objectStore("groups");
-    let request = store.get(id);
 
-    request.onsuccess = function () {
-        let group = request.result;
+    store.get(id).onsuccess = function (event) {
+        let group = event.target.result;
         if (!group) return;
 
         group.ticketAmount += amount;
         group.pending += amount;
 
-        store.put(group);
-        alert("Ticket added!");
-        loadGroups();
+        store.put(group).onsuccess = function () {
+            alert("Ticket added!");
+            loadGroups();
+        };
     };
 }
 
@@ -170,16 +156,11 @@ function addPerson() {
     let transaction = db.transaction(["persons"], "readwrite");
     let store = transaction.objectStore("persons");
 
-    let person = {
-        name: name,
-        ticketAmount: ticketAmount,
-        pending: ticketAmount,
-    };
+    let person = { name, ticketAmount, pending: ticketAmount };
 
-    let request = store.add(person);
-    request.onsuccess = function () {
+    store.add(person).onsuccess = function () {
         alert("Person added successfully!");
-        loadPersons(); // Refresh person list
+        loadPersons();
         document.getElementById("personName").value = "";
         document.getElementById("ticketAmountPerson").value = "";
     };
@@ -187,20 +168,16 @@ function addPerson() {
 
 // Function to load persons
 function loadPersons() {
-    if (!db) {
-        console.error("Database not ready yet.");
-        return;
-    }
+    if (!db) return;
 
     let transaction = db.transaction(["persons"], "readonly");
     let store = transaction.objectStore("persons");
-    let request = store.getAll();
 
-    request.onsuccess = function () {
-        let persons = request.result;
+    store.getAll().onsuccess = function (event) {
+        let persons = event.target.result;
         let personList = document.getElementById("personList");
 
-        if (!personList) return; // Avoid errors on pages without personList
+        if (!personList) return;
 
         personList.innerHTML = "";
 
@@ -219,7 +196,8 @@ function loadPersons() {
 
 // Function to add a payment to a person
 function addPaymentToPerson(id) {
-    let amount = parseFloat(prompt(`Enter payment amount:`));
+    id = Number(id);
+    let amount = parseFloat(prompt("Enter payment amount:"));
 
     if (isNaN(amount) || amount <= 0) {
         alert("Invalid amount!");
@@ -228,45 +206,15 @@ function addPaymentToPerson(id) {
 
     let transaction = db.transaction(["persons"], "readwrite");
     let store = transaction.objectStore("persons");
-    let request = store.get(id);
 
-    request.onsuccess = function () {
-        let person = request.result;
+    store.get(id).onsuccess = function (event) {
+        let person = event.target.result;
         if (!person) return;
 
-        person.pending -= amount;
-        if (person.pending <= 0) {
-            person.pending = 0;
-        }
-
-        store.put(person);
-        alert("Payment added!");
-        loadPersons();
-    };
-}
-
-// Function to add a ticket to a person
-function addTicketToPerson(id) {
-    let amount = parseFloat(prompt(`Enter ticket amount:`));
-
-    if (isNaN(amount) || amount <= 0) {
-        alert("Invalid amount!");
-        return;
-    }
-
-    let transaction = db.transaction(["persons"], "readwrite");
-    let store = transaction.objectStore("persons");
-    let request = store.get(id);
-
-    request.onsuccess = function () {
-        let person = request.result;
-        if (!person) return;
-
-        person.ticketAmount += amount;
-        person.pending += amount;
-
-        store.put(person);
-        alert("Ticket added!");
-        loadPersons();
+        person.pending = Math.max(0, person.pending - amount);
+        store.put(person).onsuccess = function () {
+            alert("Payment added!");
+            loadPersons();
+        };
     };
 }
